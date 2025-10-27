@@ -1,5 +1,6 @@
-const { app, BrowserWindow, ipcMain, dialog, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, nativeImage, shell } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { spawn } = require('child_process');
 
 function resolveExecutablePath() {
@@ -12,10 +13,14 @@ function resolveExecutablePath() {
 }
 
 function resolveDefaultOutputDir() {
-  // "Programmet befinner sig i" tolkas som:
-  // - Packad app: samma mapp som exe (process.execPath)
-  // - Dev: projektroten (app.getAppPath())
+  // Default to a fixed temp directory on Windows
   try {
+    if (process.platform === 'win32') {
+      const dir = 'C:\\temp\\FBX2GLTFConverter';
+      fs.mkdirSync(dir, { recursive: true });
+      return dir;
+    }
+    // Fallback behavior for non-Windows (dev convenience)
     if (app.isPackaged) {
       return path.dirname(process.execPath);
     }
@@ -26,9 +31,26 @@ function resolveDefaultOutputDir() {
 }
 
 function createWindow() {
+  // Try to use app icon if available
+  const iconPath = (() => {
+    try {
+      if (process.platform === 'win32') {
+        // On Windows, packaged EXE icon is used; this helps in dev if build/icon.ico exists
+        const devIco = path.join(__dirname, 'build', 'icon.ico');
+        return devIco;
+      }
+      // Non-Windows (future-proof): prefer PNG
+      const devPng = path.join(__dirname, 'build', 'icon.png');
+      return devPng;
+    } catch {
+      return undefined;
+    }
+  })();
+
   const win = new BrowserWindow({
     width: 1000,
     height: 720,
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -157,9 +179,10 @@ ipcMain.handle('run-conversion', async (event, payload) => {
     log('Inga indatafiler valda.');
     return { ok: false, converted: 0 };
   }
+  const usedDefaultOutput = !outputDir;
   const finalOutputDir = outputDir && String(outputDir).trim().length > 0 ? outputDir : resolveDefaultOutputDir();
-  if (!outputDir) {
-    log(`Ingen utdatakatalog vald – använder programmets katalog: ${finalOutputDir}`);
+  if (usedDefaultOutput) {
+    log(`Ingen utdatakatalog vald – använder standardkatalog: ${finalOutputDir}`);
   }
 
   let success = 0;
@@ -194,6 +217,19 @@ ipcMain.handle('run-conversion', async (event, payload) => {
 
   const summary = { ok: success === inputFiles.length, converted: success, total: inputFiles.length, results };
   win?.webContents.send('run-finished', summary);
+
+  // If default output dir was used, open Explorer to the first successful file (or the folder)
+  try {
+    if (usedDefaultOutput) {
+      const firstOk = results.find(r => r.ok);
+      if (firstOk && firstOk.outputPath) {
+        log('Öppnar standardkatalog i Utforskaren…');
+        shell.showItemInFolder(firstOk.outputPath);
+      } else if (finalOutputDir) {
+        shell.openPath(finalOutputDir);
+      }
+    }
+  } catch {}
   return summary;
 });
 

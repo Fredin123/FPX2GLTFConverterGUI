@@ -23,6 +23,8 @@ function runPackager() {
   const icon = hasIcon();
   if (icon) {
     args.push('--icon', icon);
+    // Also include the icon as an extra resource so it's available at runtime if needed
+    args.push('--extra-resource', icon);
     console.log(`Using icon: ${icon}`);
   } else {
     console.log('No icon found at build/icon.ico — using default Electron icon.');
