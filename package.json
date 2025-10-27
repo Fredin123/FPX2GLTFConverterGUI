@@ -7,9 +7,13 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "release:win:dir": "node scripts/release-win.js dir",
+    "release:win:zip": "node scripts/release-win.js zip",
+    "release:win": "node scripts/release-win.js all"
   },
   "devDependencies": {
-    "electron": "^30.0.0"
+    "electron": "^30.0.0",
+    "electron-packager": "^17.1.2"
   }
 }

@@ -43,8 +43,25 @@ See the FBX2glTF project for full documentation:
 https://github.com/facebookincubator/FBX2glTF
 
 ## Packaging
-This setup targets development mode. For packaging, ensure the executable is bundled with the app resources. The code looks for the exe in `process.resourcesPath` when packaged, and in the project root during development. Popular choices for packaging are
-`electron-builder` or `electron-forge`.
+This setup targets development mode. For a simple release without an installer, use the provided scripts to create a packaged folder (and an optional zip) that contains everything needed to run the app. The code looks for the exe in `process.resourcesPath` when packaged, and in the project root during development.
+
+### Build a Windows release (folder + optional zip)
+
+```powershell
+# From the project folder
+npm.cmd install
+npm.cmd run release:win       # builds a folder and a .zip under ./dist
+
+# Or only the folder without zipping
+npm.cmd run release:win:dir
+```
+
+Outputs under `dist/`:
+- Folder: `FBX2glTF Converter-win32-x64` (run `FBX2glTF Converter.exe` inside)
+- Zip: `FBX2glTF-Converter-win32-x64.zip`
+
+Custom app icon (optional):
+- Place a Windows icon file at `build/icon.ico`. The release script will automatically use it. If it’s absent, Electron’s default icon is used.
 
 ## Troubleshooting
 - If nothing happens when you run: verify `FBX2glTF-windows-x64.exe` is in the same folder as `main.js` (project root) during development.
