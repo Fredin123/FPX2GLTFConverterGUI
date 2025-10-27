@@ -1,55 +1,52 @@
-# FBX → glTF Konverterare (Electron GUI)
+# FBX → glTF Converter (Electron GUI)
 
-Ett enkelt GUI för att köra `FBX2glTF-windows-x64.exe` lokalt på Windows.
+A simple GUI to run `FBX2glTF-windows-x64.exe` locally on Windows.
 
-## Förutsättningar
+## Prerequisites
 - Windows 10/11
-- Node.js 18+ (inkluderar npm)
-- Filen `FBX2glTF-windows-x64.exe` placerad i projektroten (den finns redan här i repo-mappen)
+- Node.js 18+ (includes npm)
+- The `FBX2glTF-windows-x64.exe` file placed in the project root (it is already in this repo folder)
 
-## Starta
+## Getting started
 
 ```powershell
-# I projektmappen
+# From the project folder
 npm.cmd install
 npm.cmd start
 ```
 
-> Tips: I PowerShell kan `npm` blockeras av ExecutionPolicy. Använd `npm.cmd` som ovan.
+> Tip: In PowerShell, using `npm.cmd` ensures the correct Windows shim is executed if script execution policies interfere.
 
-## Användning
-1. Öppna appen, klicka "Välj filer…" och markera en eller flera `.fbx`-filer.
-2. Välj utdatakatalog (var konverterade filer ska hamna).
-3. Välj alternativ:
-   - Format: GLB (enfil) eller glTF (+ resurser). Vid glTF kan du markera "Bädda in" för att inlinea resurser i JSON.
-   - Material: Auto, PBR metallic-roughness eller Unlit.
+## Usage
+1. Open the app, click "Choose files…" and select one or more `.fbx` files.
+2. Choose the output folder (where converted files will be saved).
+3. Pick options:
+   - Format: GLB (single file) or glTF (+ resources). For glTF you can tick "Embed resources" to inline buffers in the JSON.
+   - Materials: Auto (default), PBR metallic-roughness, or Unlit.
    - UV: Flip U/V.
-   - Indexstorlek, normal-beräkning, animation FPS.
-   - Draco-komprimering (nivå och bitdjup per attribut).
-4. Klicka "Konvertera". Loggflödet visas nederst. Varje indatafil skrivs ut som
-   `<Utdatakatalog>/<filnamn>.glb` eller `.gltf` beroende på val.
+   - Index size, normals computation, animation FPS.
+   - Draco compression (level and per-attribute bit precision).
+4. Click "Convert". The log stream appears at the bottom. Each input file is written as
+   `<OutputFolder>/<filename>.glb` or `.gltf` depending on your selection.
 
-## Stöd för CLI-flaggor
-Appen mappar till FBX2glTFs flaggor, t.ex.:
+## Supported CLI flags
+The app maps to FBX2glTF flags, for example:
 - `--input`, `--output`
 - `--binary`, `--embed`
 - `--verbose`, `--user-properties`
 - `--pbr-metallic-roughness`, `--khr-materials-unlit`
 - `--flip-u`, `--flip-v`, `--no-flip-u`, `--no-flip-v`
 - `--long-indices`, `--compute-normals`, `--anim-framerate`
-- `--draco` + `--draco-*` bitflaggor
+- `--draco` + `--draco-*` bit options
 
-Se projektet för FBX2glTF för fullständig dokumentation:
+See the FBX2glTF project for full documentation:
 https://github.com/facebookincubator/FBX2glTF
 
-## Packetering
-Denna setup är fokuserad på utvecklingsläge. Vid packetering behöver exekverbara
-filen inkluderas i appens resurser. Koden försöker hitta exe i `process.resourcesPath`
-vid packad app, och i projektroten i dev. Populära val för packetering är
-`electron-builder` eller `electron-forge`.
+## Packaging
+This setup targets development mode. For packaging, ensure the executable is bundled with the app resources. The code looks for the exe in `process.resourcesPath` when packaged, and in the project root during development. Popular choices for packaging are
+`electron-builder` or `electron-forge`.
 
-## Felsökning
-- Om inget händer vid körning: kontrollera att `FBX2glTF-windows-x64.exe` ligger i
-  samma mapp som `main.js` (projektroten) i utvecklingsläge.
-- Öppna DevTools (Ctrl+Shift+I) för konsolloggar i UI.
-- Kör `FBX2glTF-windows-x64.exe --help` i terminal för att verifiera att exe fungerar.
+## Troubleshooting
+- If nothing happens when you run: verify `FBX2glTF-windows-x64.exe` is in the same folder as `main.js` (project root) during development.
+- Open DevTools (Ctrl+Shift+I) to see UI console logs.
+- Run `FBX2glTF-windows-x64.exe --help` in a terminal to verify the exe works.
