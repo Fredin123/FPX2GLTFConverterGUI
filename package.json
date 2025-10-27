@@ -1,0 +1,15 @@
+{
+  "name": "fbx2gltf-electron-gui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Electron GUI to run FBX2glTF on Windows",
+  "main": "main.js",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^30.0.0"
+  }
+}

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FBX → glTF Konverterare</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>FBX → glTF Konverterare</h1>
+    <p>GUI för <code>FBX2glTF-windows-x64.exe</code></p>
+  </header>
+
+  <section class="io">
+    <div id="dropZone" class="drop-zone" title="Dra & släpp .fbx här">
+      <strong>Släpp .fbx-filer här</strong>
+      <span class="muted">eller använd knappen nedan</span>
+    </div>
+    <div class="field">
+      <label>Indatafiler (.fbx)</label>
+      <div class="row">
+        <button id="btnPickInput">Välj filer…</button>
+        <span id="inputFilesLabel" class="muted">Inga filer valda</span>
+      </div>
+      <ul id="inputList"></ul>
+    </div>
+
+    <div class="field">
+      <label>Utdatakatalog</label>
+      <div class="row">
+        <button id="btnPickOutput">Välj katalog…</button>
+        <span id="outputDirLabel" class="muted">Ingen katalog vald</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="options">
+    <h2>Alternativ</h2>
+    <div class="grid">
+      <div class="field">
+        <label>Utdataformat</label>
+        <div>
+          <label><input type="radio" name="format" value="glb" checked> Enfil (GLB)</label>
+          <label><input type="radio" name="format" value="gltf"> glTF + resurser</label>
+          <label title="Inkludera buffertar inuti glTF JSON">
+            <input type="checkbox" id="optEmbed" disabled> Bädda in resurser (--embed)
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Material</label>
+        <div>
+          <select id="optMaterial">
+            <option value="auto">Auto (standard)</option>
+            <option value="pbr">PBR metallic-roughness</option>
+            <option value="unlit">Unlit</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>UV</label>
+        <div>
+          <label><input type="checkbox" id="optFlipU"> Flip U</label>
+          <label><input type="checkbox" id="optFlipV" checked> Flip V</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Indexstorlek</label>
+        <div>
+          <select id="optLongIndices">
+            <option value="auto" selected>Auto</option>
+            <option value="never">Aldrig (16-bit)</option>
+            <option value="always">Alltid (32-bit)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Normals</label>
+        <div>
+          <select id="optComputeNormals">
+            <option value="broken">Reparera trasiga (standard)</option>
+            <option value="missing">Skapa saknade</option>
+            <option value="always">Alltid</option>
+            <option value="never">Aldrig</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Animation FPS</label>
+        <div>
+          <select id="optAnimFramerate">
+            <option value="">Standard</option>
+            <option value="bake24">24</option>
+            <option value="bake30">30</option>
+            <option value="bake60">60</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label><input type="checkbox" id="optUserProps"> Spara FBX User Properties</label>
+        <label><input type="checkbox" id="optVerbose"> Verbose</label>
+      </div>
+    </div>
+
+    <details class="advanced">
+      <summary>Draco-komprimering (avancerat)</summary>
+      <div class="grid">
+        <div class="field">
+          <label><input type="checkbox" id="optDraco"> Aktivera Draco (--draco)</label>
+        </div>
+        <div class="field">
+          <label>Nivå: <span id="dracoLevelVal">7</span></label>
+          <input type="range" id="optDracoLevel" min="0" max="10" value="7">
+        </div>
+        <div class="field">
+          <label>Bits position</label>
+          <input type="number" id="optBitsPos" min="1" max="32" value="14">
+        </div>
+        <div class="field">
+          <label>Bits UV</label>
+          <input type="number" id="optBitsUV" min="1" max="32" value="10">
+        </div>
+        <div class="field">
+          <label>Bits normaler</label>
+          <input type="number" id="optBitsNrm" min="1" max="32" value="10">
+        </div>
+        <div class="field">
+          <label>Bits färger</label>
+          <input type="number" id="optBitsCol" min="1" max="32" value="8">
+        </div>
+        <div class="field">
+          <label>Bits övrigt</label>
+          <input type="number" id="optBitsOther" min="1" max="32" value="8">
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+  <section class="run">
+    <button id="btnRun" class="primary">Konvertera</button>
+    <span id="runStatus" class="muted"></span>
+  </section>
+
+  <section class="logs">
+    <h2>Loggar</h2>
+    <pre id="log"></pre>
+  </section>
+
+  <section class="result">
+    <h2>Resultat</h2>
+    <div id="resultCard" class="result-card hidden">
+      <div id="resultThumb" class="thumb" aria-hidden="true">GLTF</div>
+      <div class="meta">
+        <div id="resultName" class="name">—</div>
+        <div id="resultPath" class="path muted">—</div>
+        <div class="hint muted">Dra rutan nedan till en mapp för att exportera filen</div>
+        <div id="dragHandle" class="drag-handle" draggable="true">Dra ut GLB/GLTF</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <small>Bygger på FBX2glTF. Se hjälpen med --help för fullständig lista av flaggor.</small>
+  </footer>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
